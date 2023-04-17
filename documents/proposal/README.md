@@ -39,12 +39,8 @@ The goal of this project is to use network machine learning techniques to analyz
 
 ### Timeline
 
-17/04 - 21/04: Data preprocessing (1 week)
-
-24/04 - 05/05: Exploration (Network analysis) (2 weeks)
-
-08/05 - 26/05: Exploitation (ML models and predictions) (3 weeks)
-
-29/05 - 09/06: Final report writing (2 weeks)
-
-12/06 - 16/06: Final presentation (1 week)
+- 17/04 - 21/04: Data preprocessing (1 week)
+- 24/04 - 05/05: Exploration (Network analysis) (2 weeks)
+- 08/05 - 26/05: Exploitation (ML models and predictions) (3 weeks)
+- 29/05 - 09/06: Final report writing (2 weeks)
+- 12/06 - 16/06: Final presentation (1 week)
