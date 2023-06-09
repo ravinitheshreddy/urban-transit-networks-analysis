@@ -44,6 +44,10 @@ This project presents a network analysis of public transport systems in 25 citie
 pip install -r requirements.txt
 ```
 
+### Usage
+
+Download the data folder available on the drive at this [link](https://drive.google.com/drive/folders/1rdKPD_2VsJ9aW5KYiduvF5uDNTDdKFSE?usp=share_link) and place it in the main directory.
+
 ## License
 
 Cross City Urban Transit Networks Analysis - Nitish Ravishankar and Ravinithesh Annapureddy
