@@ -10,6 +10,8 @@ Network Machine Learning course, Spring Semester 2023
 
 This project presents a network analysis of public transport systems in 25 cities. Various topological properties and connectivity measures were analysed along with centrality measures to identify critical transport stops. Furthermore, the analysis explored the potential for predicting directed edges and identifying the types of transport modes based on node features. The findings provide valuable insights into the connectivity of public transport systems.
 
+[Complete Report](./documents/report/urban_transit_networks_analysis.pdf)
+
 <br/>
 
 ## Structure
