@@ -8,21 +8,25 @@ Network Machine Learning course, Spring Semester 2023
 
 ## Abstract
 
+This project presents a network analysis of public transport systems in 25 cities. Various topological properties and connectivity measures were analysed along with centrality measures to identify critical transport stops. Furthermore, the analysis explored the potential for predicting directed edges and identifying the types of transport modes based on node features. The findings provide valuable insights into the connectivity of public transport systems.
+
 <br/>
 
 ## Structure
 
 - `notebooks/`: Contains the notebooks used in the creation of metadata, plots, and results analysis.
   - `EDA/`:
-    - `notebookname.ipynb`: Add the description of the notebook here.
+    - `exploration.ipynb`: Exploratory Analysis of the data.
+  - `Exploitation/`:
+    - `edge-prediction/`: Notebooks for edge prediction tasks
+    - `label-prediction/`: Notebooks for label prediction tasks
   - `IO/`:
-    - `notebookname.ipynb`: Add the description of the notebook here.
-  - `results_analysis/`:
-    - `notebookname.ipynb`: Add the description of the notebook here.
-- `src/`: Contains the python script used to train the model
+    - `city-transport-graph.ipynb`: Create and save city transport graphs.
 - `data/`: Contains the (some) data required to execute the scripts and notebooks. Large files and folders are stored separately.
-  - `transport_data/`: Contains the public transport network data sets for 25 cities. ```This data is downloaded from  https://zenodo.org/record/1186215.```
-    - ADD descriptions of the folders and files here.
+  - `transport_data/`: Contains the public transport network data sets for 25 cities. ```Not uploaded on Github```
+    - `checkpoints/`: Contains the intermediate data stored during the analysis.
+    - `images/`: Contains the images to use in the notebooks.
+    - `network_graphs/`: Contains the city-wise directed and undirected graphs generated with the notebook in IO.
 - `documents`: Contains the documents related to the project.
   - `proposal/`: Contains the proposal document.
   - `report/`: Contains the tex and files used in generating the report document.
@@ -37,10 +41,6 @@ Network Machine Learning course, Spring Semester 2023
 ```bash
 pip install -r requirements.txt
 ```
-
-### Usage
-
-<br/>
 
 ## License
 
