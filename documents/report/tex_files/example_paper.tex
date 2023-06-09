@@ -6,6 +6,8 @@
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{subfigure}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{booktabs} % for professional tables
 
 % hyperref makes hyperlinks in the resulting PDF.
@@ -13,7 +15,6 @@
 % please comment out the following usepackage line and replace
 % \usepackage{icml2023} with \usepackage[nohyperref]{icml2023} above.
 \usepackage{hyperref}
-
 
 % Attempt to make hyperref and algorithmic work together better:
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
@@ -55,7 +56,7 @@
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-\icmltitlerunning{Cross City Urban Public Transit Networks Analysis}
+\icmltitlerunning{Urban Public Transit Analysis}
 
 \begin{document}
 
@@ -78,8 +79,8 @@
 \icmlsetsymbol{equal}{*}
 
 \begin{icmlauthorlist}
-\icmlauthor{Ravinithesh Annapureddy}{yyy,equal}
-\icmlauthor{Nitish Ravishankar}{yyy,equal}
+\icmlauthor{Ravinithesh A}{yyy}
+\icmlauthor{Nitish Ravishankar}{yyy}
 \end{icmlauthorlist}
 
 \icmlaffiliation{yyy}{EPFL, Switzerland}
@@ -109,9 +110,7 @@
 \printAffiliationsAndNotice{\icmlEqualContribution}
 
 \begin{abstract}
-This document provides a basic paper template and submission guidelines.
-Abstracts must be a single paragraph, ideally between 4--6 sentences long.
-Gross violations will trigger corrections at the camera-ready phase.
+This project presents a network analysis of public transport systems in 25 cities. Various topological properties and connectivity measures were analysed along with centrality measures to identify critical transport stops. Furthermore, the analysis explored the potential for predicting directed edges and identifying the types of transport modes based on node features. The findings provide valuable insights into the connectivity of public transport systems.
 \end{abstract}
 
 \section{Introduction}
@@ -123,537 +122,342 @@ Transportation systems are natural graphs/networks in a geographic space with st
 
 A network model of the transport system provides a visual representation that aids in understanding their overall structure and connectivity. In addition, network analysis methods enable connectivity analysis, performance evaluation, route planning and modelling. Such studies give a deeper understanding of the system's infrastructure, efficiency, promote data-driven decision making and provide evidence for optimising and improving transport systems.
 
-In the above-given context, this project studies the transportation network of 25 cities made available in \textbf{A collection of public transport network data sets for 25 cities} \cite{rainer_kujala_2018_1186215}. Specifically, the project examines: \\
-\textbf{1:} How do the topological properties of public transport networks differ across different cities and compare in terms of connectivity?
-\textbf{2:} Which public transport stops are the most important in each city based on their centrality measures? 
-\textbf{3:} Whether node features can predict directed edges between them?
+In the above-given context, this project studies the transportation network of 25 cities made available in \textbf{A collection of public transport network data sets for 25 cities} \cite{rainer_kujala_2018_1186215}. Specifically, the project examines:
 
-The rest of the report's organisation is as follows: The next section describes the data and pre-processing steps. Sections 3 and 4 present the exploration and exploitation analysis of the data and the results. The last section presents conclusions and limitations.
+\begin{enumerate}
+    \item How do the topological properties of public transport networks differ across different cities and compare in terms of connectivity?
+    \item Which public transport stops are the most important in each city based on their centrality measures?
+    \item Whether node features can predict directed edges between them?
+\end{enumerate}
+
+The rest of the report's organisation is as follows: The next section describes the data and pre-processing steps. Sections \ref{exploration} and \ref{exploitation} present the exploration and exploitation analysis of the data and the results. The last section presents conclusions and limitations.
 
 \section{Dataset and Pre-processing}
 \label{dataset}
 
 \subsection{Dataset}
-As the title describes \cite{rainer_kujala_2018_1186215}, this data is a collection of the transport network of 25 cities. The following cities were part of the collection: \textit{Adelaide, Brisbane, Canberra, Melbourne} and \textit{Sydney} from Australia (Oceania); \textit{Belfast} and \textit{Dublin} from Northern Ireland and Ireland; \textit{Berlin} from Germany; \textit{Bordeaux, Grenoble, Nantes, Paris, Rennes} and \textit{Toulouse} from France; \textit{Helsinki, Kuopio} and \textit{Turku} from Finland; \textit{Palermo, Rome} and \textit{Venice} from Italy; \textit{Lisbon} from Portugal; \textit{Prague} from Czech Republic; \textit{Luxembourg} (Europe); \textit{Detroit} from the United States of American and \textit{Winnipeg} from Canada (North America).
 
-The collection provides multiple CSV and GEOJSON files for each city. Among those files, for each city, the \textit{networks\_nodes.csv }and \textit{network\_combined.csv }contain the information on the nodes and the edges, respectively. The former file contains information about the nodes (stops) - the Id, latitude, longitude and name. The latter file contains information about the edges (routes) such as the start node, to node, the straight line distance, the average duration between the stops, the number of times a public transport vehicle passes through that stop in an hour and the route type. The route type can be one of the following seven types: tram, subway, rail, bus, ferry, cablecar, gondola and funicular. This project uses a MultiDiGraph to represent the transport network of each city as there are different edges for different modes of transport, and each edge has a start and an end node.
+As the title describes \cite{rainer_kujala_2018_1186215}, this data is a collection of the transport network of 25 cities. The following cities were part of the collection: \textit{Adelaide, Brisbane, Canberra, Melbourne} and \textit{Sydney} from Australia (Oceania); \textit{Detroit} from the United States of America and \textit{Winnipeg} from Canada (North America); \textit{Belfast} and \textit{Dublin} from Northern Ireland and Ireland; \textit{Berlin} from Germany; \textit{Bordeaux, Grenoble, Nantes, Paris, Rennes} and \textit{Toulouse} from France; \textit{Helsinki, Kuopio} and \textit{Turku} from Finland; \textit{Palermo, Rome} and \textit{Venice} from Italy; \textit{Lisbon} from Portugal; \textit{Prague} from Czech Republic and \textit{Luxembourg} (Europe). 
+
+The collection provides multiple CSV and GEOJSON files for each city. Among those files, for each city, the \textit{networks\_nodes.csv} and \textit{network\_combined.csv} contain the information on the nodes and the edges, respectively. The former file contains information about the nodes (stops) - the Id, latitude, longitude and name. The latter file contains information about the edges (routes) such as the start node, to node, the straight line distance, the average duration between the stops, the number of times a public transport vehicle passes through that stop in an hour and the route type. The route-type in a city can be one of the following seven types: tram, subway, rail, bus, ferry, cablecar, gondola and funicular. This project uses a \texttt{nx.MultiDiGraph} graph to represent the transport network of each city, as there are different edges for different modes of transport, and each edge has a start and an end node.
 
 \subsection{Pre-processing}
-Initial examination showed three issues in the data. First, there were nodes with different IDs but the same name. Second, in some situations, nodes close to each other had different IDs - they were stops near big stations or where each platform had a different name. Lastly, there were some self-loops in the edge data, and there was no relevant information either on the city's transport website or in the data descriptor paper about self-loops. These issues could be due to the lack of standards in naming the stops (some cities having one name for an entire station or naming up to platform level) and artefacts of the spatial filtering performed by the creators of the dataset. Hence the pre-processing involved merging nodes with the same name and retaining the node with the smallest node Id. In the second step, remove edges with the same start and end node. As merging based on geographic distance could lead to contradictions with ground reality, the second issue out of the three remained unresolved.
+Initial examination showed three issues in the data. First, there were nodes with different IDs but the same name. Second, in some situations, nodes close to each other had different IDs - they were stops near big stations or where each platform had a different name. Lastly, there were some self-loops in the edge data, and there was no relevant information either on the city's transport website or in the data descriptor paper about self-loops. These issues could be due to the lack of standards in naming the stops (some cities having one name for an entire station or naming up to platform level) and artefacts of the spatial filtering performed by the creators of the dataset. Hence the pre-processing involved merging nodes with the same name and retaining the node with the smallest node Id. In the second step, the edges with the same start and end node were removed. As merging based on geographic distance could lead to contradictions with ground reality, the second issue out of the three remained unresolved.
 
 \section{Network Analysis}
 \label{analysis}
 
 \subsection{Exploration}
 \label{exploration}
-The part of the project performs exploratory data analysis on the transport network of each city to gain an understanding of the dataset. Among the seven possible modes of transport described in the dataset, no city has networks of funiculars and gondolas, and only one city (Prague) has a cable car network with three stops. While all the cities have a bus network, 14 have a tram network,  12 have a rail network and ferry and subway networks are present in 8 each. Figure 1 shows the density of each mode of transport except for not strongly connected ones. The density of bus networks is very low compared to other networks implying fewer connections between stops, which makes travel difficult between different locations within the network. However, buses might provide last-mile connectivity and go around shorter distances in a limited geographical area. The rail network follows the bus with ten times more density. Nevertheless, it still falls between 0.003 and an outlier value of 0.7. The outlier is the Canberra rail network with three nodes and four edges. The tram network has the third lowest density varying between 0.001 and 0.1. The subway networks have the second highest density roughly ten times less than that of the ferry network (with the highest density values lying in the range of 0.02 and 0.7). These results are expected as the transport networks do not connect all stops with the majority of the other stops.
 
-Figures 2 and 3 show the in-degree and the out-degree distributions for various modes of transport in each city. The in-degree distribution follows a very similar pattern to the out-degree distribution. The distributions highlight many nodes with low degrees and a few with high degrees, making it difficult to model them by a random network model. With a median of an average degree of 2.03, each stop connects with two others. All the cities have around 1 minute of median travel time in the complete network except Detroit and Winnipeg, where it is half a minute and Paris and Prague, where it is nearly 2 minutes. However, on the individual transport mode level, people in Paris, Toulouse and Grenoble spend 2 minutes between two stops on average on the tram, and others spend around a minute to a minute and a half. For the subways, Helsinki has the highest time of 1.9 minutes. People in Canberra spend 20 minutes between rail stations, followed by distantly second Luxembourg at 3.87 minutes. The average travel time between stops on the bus is around one minute. Only eight cities have ferries, and the average travel time between their piers is highest in Bordeaux (9.5 minutes), followed by Sydney (8.9 minutes), and only 2 minutes in Prague. Lastly, only Prague has a cable car with three nodes and an average duration of 1.5 minutes between the stops.
+This part of the project performs exploratory data analysis on the transport network of each city to gain an understanding of the dataset. Among the seven possible modes of transport described in the dataset, no city has networks of funiculars and gondolas, and only one city (Prague) has a cable car network with three stops. While all the cities have a bus network, 14 have a tram network, 12 have a rail network and ferry and subway networks are present in 8 each.
 
-The Betweenness Centrality (BC) of the nodes calculated using the average duration between stops captures the relative importance of transfer nodes within the network. The results support the hypothesis that the nodes with the highest BC in the city network represent the transit stations between different modes of transport. Luxembourg, Gare Centrale in Luxembourg or S+U Gesundbrunnen Bhf (Berlin) in Berlin and Chatelet les Halles in Paris are a few examples that are either big transit stops or next to very busy ones. Some stations, such as those in Berlin's ferry network with three routes between two different nodes each, have zero centrality because the network has very few or disconnected nodes. Figure 4 visualises the network in Winnipeg with nodes colour coded using the BC values. The nodes in yellow have the highest BC and are close to the city centre. Figure 5 visualises the Berlin network, and nodes on the city's periphery and centre have the highest BC. Further examination revealed that they are the transit stations between different lines of the Berlin S-Bahn, regional and long-distance trains of the German train network. In a no longer online document, German's national rail company categorises six stations among the top ten nodes of Berlin, having the highest BC, as category 1 and 2 stations. These highly classified stations have heavy and efficient infrastructure, are frequented heavily and serve as critical transfer points.
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/city_route_density_distribution.eps}}
+\caption{Transport Network Density Distribution in each city}
+\label{net-density}
+\end{center}
+\vskip -0.3in
+\end{figure}
 
-For transport networks, Average Clustering Coefficient (ACC) can provide insight into the local connectivity of the network and the extent to which transportation nodes are connected. A high average clustering coefficient indicates that the nodes tend to be densely connected, forming clusters or hubs. A low average clustering coefficient could imply that transportation nodes in the network are more sparsely connected, potentially leading to longer travel times or more complicated travel routes for travellers. In the 25 cities, almost all modes have low clustering coefficients, some even zero, indicating disconnected components like the Berlin ferry. The rail and bus modes have higher ACC, suggesting that they are better connected than the other modes of transport. Cities have one (or rarely two) modes with a high clustering coefficient.
+\cref{net-density} shows the density of each mode of transport except for not strongly connected ones. The density of bus networks is very low compared to other networks implying fewer connections between stops, which makes travel difficult between different locations within the network. However, buses might provide last-mile connectivity and go around shorter distances in a limited geographical area. The rail network follows the bus with ten times more density. Nevertheless, it still falls between 0.003 and an outlier value of 0.7. The outlier is the Canberra rail network with three nodes and four edges. The tram network has the third lowest density varying between 0.001 and 0.1. The subway networks have the second highest density roughly ten times less than that of the ferry network (with the highest density values lying in the range of 0.02 and 0.7). These results are expected as the transport networks do not connect all stops with the majority of the other stops and are sparse like other real-world networks \cite{frossard_2023a}. 
 
-Another parameter to measure the connectivity is the possibility of changing between different modes of transport, studied through the types of incoming and outgoing edges of a node. Figure 6 shows the number of different transport modes at a stop on the x-axis and the number of nodes on the y-axis. A city can be well-connected if there are more opportunities to switch between different modes of transport. In other words, a higher number of nodes with multiple transportation options passing through them indicates a well-connected transport network. However, this analysis does not fully apply to cities like Belfast, Detroit, Kuopio, Palermo, Turku, and Winnipeg, as they only have bus transport. For most cities, the distribution is skewed to the left, suggesting that most nodes accommodate only one mode. These cities have less interconnected transport networks, resulting in congestion at central stations where many people need to switch public transport vehicles. Adelaide, Brisbane, Canberra, Dublin, and Sydney belong to this category, although Adelaide and Sydney have three and four modes of transport, respectively. The second category comprises cities with moderately connected networks, such as Bordeaux, Helsinki, Lisbon, Melbourne, Paris, and Rome. In these cities, a relatively higher number of nodes connect with more than one or two modes of transport. Lastly, the well-connected cities include Berlin, Grenoble, Luxembourg, Nantes, Prague, Rennes, Toulouse, and Venice. These cities have a higher proportion of nodes connecting to diverse transportation modes allowing passengers to disperse across multiple stations, facilitating ease of movement. It's important to note that this analysis solely focuses on theoretical connectivity and does not account for factors like city area, population, or topography.
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/in_deg_distribution.eps}}
+\caption{Node In-Degree Distribution in each city}
+\label{in-deg}
+\end{center}
+\vskip -0.3in
+\end{figure}
 
-Lastly, the networks were modelled using the Barabasi-Albert (BA) model, which typically starts with an initial set of nodes and uses both growth and preferential attachment in developing the network. The results show that the BA model provides a reasonable approximation to model the nature of the degree distribution of the nodes in the network. For cities with a large number of nodes and edges, like Paris and Sydney, there is a steeper reduction in the number of nodes with the increase in the node degree. For smaller ones like Prague and Winnipeg, the decline is more gradual. Transport networks for larger cities may have a higher preferential attachment factor that is superlinear in terms of node degree. The BA model that applies a linear preferential attachment has a less steep reduction in the number of nodes for higher degrees.
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/out_deg_distribution.eps}}
+\caption{Node Out-Degree Distribution in each city}
+\label{out-deg}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+Figures \ref{in-deg} and \ref{out-deg} show the in-degree and the out-degree distributions for various modes of transport in each city. The in-degree distribution follows a very similar pattern to the out-degree distribution. The distributions highlight many nodes with low degrees and a few with high degrees, making it difficult to model them by a random network model. The median value of city networks' average node degrees was calculated as 2.03, probably implying that each stop connects to two other stops. An interesting observation from the degree distribution is the nodes with zero in and out degrees. Although it is not completely clear it happens in the dataset, digging into the data can give some reasons. Firstly, there are many stops (especially in bus networks) with different names on either side of the road. Another reason could be that the public transport vehicles did not make the trip through those nodes during the data collection period, or they travelled empty to the start station.
+
+All the cities have around 1 minute of median travel time in the complete network except Detroit and Winnipeg, where it is half a minute and Paris and Prague, where it is nearly 2 minutes. However, on the individual transport mode level, people in Paris, Toulouse and Grenoble spend 2 minutes between two stops on average on the tram, and others spend around a minute to a minute and a half. For the subways, Helsinki has the highest time of 1.9 minutes. People in Canberra spend 20 minutes between rail stations, followed by distantly second Luxembourg at 3.87 minutes. The average travel time between stops on the bus is around one minute. Only eight cities have ferries, and the average travel time between their piers is highest in Bordeaux (9.5 minutes), followed by Sydney (8.9 minutes), and only 2 minutes in Prague. Lastly, only Prague has a cable car with three nodes and an average duration of 1.5 minutes between the stops.
+
+The Betweenness Centrality (BC) of the nodes calculated using the average duration between stops captures the relative importance of transfer nodes within the network. The results support the hypothesis that the nodes with the highest BC in the city network represent the transit stations between different modes of transport. Luxembourg, Gare Centrale in Luxembourg or S+U Gesundbrunnen Bhf (Berlin) in Berlin and Chatelet les Halles in Paris are a few examples that are either big transit stops or next to very busy ones. Some stations, such as those in Berlin's ferry network with three routes between two different nodes each, have zero centrality because the network has very few or disconnected nodes. 
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/winnipeg_BC.eps}}
+\caption{Betweenness Centrality of nodes in Winnipeg}
+\label{BC-winni}
+\end{center}
+\vskip -0.3in
+\end{figure} 
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/berlin_BC.eps}}
+\caption{Betweenness Centrality of nodes in Berlin}
+\label{BC-berlin}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+\cref{BC-winni} visualises the network in Winnipeg with nodes colour coded using the BC values. The nodes in yellow have the highest BC and are close to the city centre. \cref{BC-berlin} visualises the Berlin network, and nodes on the city's periphery and centre have the highest BC. Further examination revealed that they are the transit stations between different lines of the Berlin S-Bahn, regional and long-distance trains of the German train network. In a no longer online document \cite{DB_kategorien}, German's national rail company categorises six stations among the top ten nodes of Berlin, having the highest BC, as category 1 and 2 stations. These highly classified stations have heavy and efficient infrastructure, are frequented heavily and serve as critical transfer points.
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/clustering_coeff.eps}}
+% \caption{Average Clustering Coefficient for each mode of transport in each city}
+% \label{acc}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+For transport networks, Average Clustering Coefficient (ACC) can provide insight into the local connectivity of the network and the extent to which transportation nodes are connected \cite{frossard_2023a}. A high average clustering coefficient indicates that the nodes tend to be densely connected, forming clusters or hubs. A low average clustering coefficient could imply that transportation nodes in the network are more sparsely connected, potentially leading to longer travel times or more complicated travel routes for travellers. In the 25 cities, almost all modes have low clustering coefficients, some even zero, indicating disconnected components like the Berlin ferry. The rail and bus modes have higher ACC, suggesting that they are better connected than the other modes of transport. Cities have one (or rarely two) modes with a high clustering coefficient.
+
+Another parameter to measure the connectivity is the possibility of changing between different modes of transport, studied through the types of incoming and outgoing edges of a node. A city can be well-connected if there are more opportunities to switch between different modes of transport. In other words, a higher number of nodes with multiple transportation options passing through them indicates a well-connected transport network. However, this analysis does not fully apply to cities like Belfast, Detroit, Kuopio, Palermo, Turku, and Winnipeg, as they only have bus transport. 
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/intermodality_hm.eps}}
+\caption{Number of modes of Transport at nodes in each city}
+\label{intermode-node}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+\cref{intermode-node} shows the number of different transport modes at a stop on the x-axis and the number of nodes on the y-axis. For most cities, the distribution is skewed to the left, suggesting that most nodes accommodate only one mode. These cities have less interconnected transport networks, resulting in congestion at central stations where many people need to switch public transport vehicles. Adelaide, Brisbane, Canberra, Dublin, Melbourne and Sydney belong to this category, although Adelaide, Melbourne and Sydney have three and four modes of transport, respectively. The second category comprises cities with moderately connected networks, such as Bordeaux, Helsinki, Lisbon, Luxembourg, Paris, Rennes, Rome and Venice. In these cities, a relatively higher number of nodes connect with more than one or two modes of transport. Lastly, the well-connected cities include Berlin, Grenoble, Nantes, Prague and Toulouse. These cities have a higher proportion of nodes connecting to diverse transportation modes allowing passengers to disperse across multiple stations, facilitating ease of movement. It's important to note that this analysis solely focuses on theoretical connectivity and does not account for factors like city area, population, or topography.
+
+The strongly connected components could represent areas with dense connections, where passengers can easily travel within the component but may have more difficulty reaching nodes outside of it \cite{frossard_2023b}. The weakly connected components may indicate areas that are not well connected or have limited accessibility. Strong components potentially represent the full-service routes, and weak components represent the somewhat connected service routes. The results show Adelaide, Brisbane, Kuopio, Lisbon, and Sydney have more than 100 strongly connected components and a few with more than 50. Weakly connected components were less than 7 in all cities except Sydney (18).
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/paris_BA.eps}}
+% \caption{Degree distribution comparison of Paris network and BA model}
+% \label{paris-BA}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/sydney_BA.eps}}
+% \caption{Degree distribution comparison of Sydney network and BA model}
+% \label{sydney-BA}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/prague_BA.eps}}
+% \caption{Degree distribution comparison of Prague network and BA model}
+% \label{prague-BA}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/winnipeg_BA.eps}}
+% \caption{Degree distribution comparison of Winnipeg network and BA model}
+% \label{winni-BA}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+% (Figure \ref{sydney-BA} with 1000 starting nodes and Number of edges to attach from a new node to existing nodes set to half of average degree)
+% (Figure \ref{prague-BA} with 500 starting nodes)
+
+Lastly, the networks were modelled using the Barabasi-Albert (BA) model, which typically starts with an initial set of nodes and uses both growth and preferential attachment in developing the network \cite{frossard_2023d}. The results show that the BA model provides a reasonable approximation to model the nature of the degree distribution of the nodes in the network. For cities with a large number of nodes and edges, like Paris and Sydney, there is a steeper reduction in the number of nodes with the increase in the node degree. For smaller ones like Prague and Winnipeg, the decline is more gradual. Transport networks for larger cities may have a higher preferential attachment factor that is superlinear in terms of node degree \cite{frossard_2023d}. The BA model that applies a linear preferential attachment has a less steep reduction in the number of nodes for higher degrees. However, BA model is not best suited for these directed networks and does not consider the changing of stations and routes \cite{Barabási_2016}.
 
 \subsection{Exploitation}
 \label{exploitation}
 
+This project attempts two exploitation tasks - edge prediction and label prediction. The former task aims to predict if a directed edge exists between two nodes, and the latter is to predict the type of edge(s) - the mode of transport - given that an edge already exists between two nodes. For both tasks, the experiments involve using two kinds of hand-crafted features and Node2Vec features. The first type of hand-crafted features uses the following individual node properties: in-degree centrality, out-degree centrality, betweenness centrality and Katz centrality. As the networks are directed, separate in and out-degree centrality was considered. The centrality measures were considered to capture the relative importance of each node in the network. The second type is shared properties of the two nodes: (1) the fraction of the number of shared incoming neighbours among all incoming neighbours between the nodes and (2) the fraction of the number of shared outgoing neighbours among all outgoing neighbours between the nodes. The node features of the source node were subtracted from the corresponding node features of the destination node to create edge features. The directedness of the edges in the network drove the decision to use subtraction in combining the node features to create edge features.
+
+\subsubsection{Experiment Setup}
+\label{setup}
+
+Both prediction tasks involved training a logistic regression model with balanced class weights while using the hand-crafted and node2vec features for both prediction tasks. Informed by the results of the exploration phase, a different model was created for each transport type in each city with a 70:30 split of training and testing data while stratifying the split based on the targets. The reported F1 score is the weighted average score of each class. The Sydney bus network and Prague cable car network were excluded from the analysis due to repeated machine failures (most likely due to kernel memory issues) and as it was the only city with three stops in that category, respectively. The experiments employing the hand-crafted features involved three sub-experiments. First, only using the features derived from the node properties. Second, only using the common incoming and outgoing neighbour's features, and lastly, with all six of them. 
+
+To mitigate the priors induced by the hand-crafted features, an alternative approach is considered through Node2Vec. The intuition behind the Node2vec embedding approach is to expect similar embeddings for nodes of the graph based on the local as well as the global view of the node neighbourhood \cite{grover2016node2vec}. The approach interpolates among the Breadth-first search as well as the Depth-first search algorithms with tuning parameters $p$ and $q$ to control the nature and extent of this neighbourhood to constrain the random walk exploration/generation. Both of them were set to 1, and they represent \cite{grover2016node2vec}:
+\begin{enumerate}
+    \item $p$ - Return parameter controls the likelihood of immediately revisiting a node in the random walk.
+    \item $q$ - The in-out parameter controls how fast the next walk explores or leaves the neighbourhood of a starting node.
+\end{enumerate}
+
+\subsubsection{Edge Prediction}
+\label{edge-pred}
+Edge features were created for all pair of nodes in the network, to train the edge prediction model. Thus, each network with $N$ nodes has $N(N-1)$ edges in the training set with the features as one of the four possible hand-crafted features and a label 1 if the edge exists in the network or 0 if it does not. 
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/edge-pred-node.eps}}
+\caption{F1 score of edge prediction using node properties}
+\label{edge-pred-node_fig}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/edge-pred-commono.eps}}
+\caption{F1 score of edge prediction using common properties}
+\label{edge-pred-common_fig}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/edge-pred-all.eps}}
+\caption{F1 score of edge prediction using both properties}
+\label{edge-pred-all_fig}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+\textsc{Hand-crafted Features}
+
+Figures \ref{edge-pred-node_fig}, \ref{edge-pred-common_fig} and \ref{edge-pred-all_fig} show the F1 scores of the models predicting edges for each mode in each city utilising the node features alone, the common features alone and both of them together, respectively. All the networks in the dataset are very sparse (see the section on density), making the chance that two nodes are connected very low. Given very small clustering coefficients and densities for most networks, the random chance of an edge existing between two nodes is also minuscule \cite{frossard_2023b}.
+
+\textit{Bus}
+
+Employing the node features, the model achieves an F1 score of more than 0.6 for all the cities and more than 0.9 for Melbourne, Canberra, Winnipeg and Lisbon. Similarly, using the shared properties between nodes, the F1 scores for all cities are higher than 0.99. Using all features together, the F1 scores start from 0.85 and go up. The average density of the bus networks is 0.001. In using common features, the regressor is learning to predict an edge if both of those values are zero. However, in denser networks and those networks that have more than one path to reach a node, the regressor is unable to perform well. In the same scenario, the F1 scores are inversely proportional to the densities i.e., the graphs with high density have low F1 scores, and those with low density have higher F1 scores. This is the only case where the results are related to a graph property.
+
+\textit{Tram}
+
+All 14 cities that have tram service have an F1 score greater than 0.5 and accuracies between 0.46 and 0.62 using the node properties as features. With common properties as features, the F1 scores go as low as 0.004 and as high as 0.988. The F1 score lies in the range of 0.14 and 0.96 when using both of them together. The average density of the tram networks is 0.03.
+
+\textit{Rail}
+
+In the 12 cities with Rail, with node properties, the F1 score is between 0.53 and 0.86. With common features, the F1 score is between 0.86 and 1.00. Using both of the features results in an F1 score between 0.72 and 1.00. In both cases, Canberra has a score of 1.0, but it only has three nodes with four edges. The average density of the rail networks is 0.08.
+
+\textit{Subway}
+
+Using node properties as features, the F1 score is in the range of 0.62 and 0.67 for the subway network, while the accuracy is in the 0.5 ballparks. The range changes to 0.035 and 0.98 with common properties and to 0.13 and 0.70 together. The average density of the subway networks is 0.05.
+
+\textit{Ferry}
+
+The F1 score for edge prediction in the ferry is between 0.56 and 0.85, while the accuracy is between 0.53 and 0.9 using the node properties. With the common features, this range changes to 0.13 to 0.95 and it becomes 0.27 to 0.91 with both of them together. The average density of the ferry networks is 0.21. 
+
+In summary, for edge prediction on an individual mode of transport, the fraction of common incoming and outgoing neighbours are best suited for the bus and rail networks in all cities. Those features are also suitable for the ferry network in Bordeaux, Sydney and Venice, the Subway network in Paris and the Tram network in Berlin and Prague. Among the remaining cities for the ferry, Subway and trams, the node properties have performed better. Considering the very sparse networks with very low clustering coefficients, these prediction results show a large improvement.
+
+\textsc{Node2Vec Features}
+
+Figure \ref{edge-pred-n2v_fig} visualises the F1 scores for the task with varying number of features. The performance of the Node2Vec features for the bus networks drops significantly compared to the handcrafted features. The F1 scores for the bus network are in the ballpark of 0.67. For the tram network, the performance improves for many cities using the Node2Vec features. The node2vec features do not fare well for the rail network as well. The node2vec features for the subway network perform similarly to that of the node features considered earlier. Lastly, in ferry networks, there is a drop in performance for some cities, and others have the same performance as using the handcrafted features.
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/edge-pred-node2vec.eps}}
+\caption{F1 score of edge prediction using 1 to 5 Node2Vec features}
+\label{edge-pred-n2v_fig}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+Overall, the Node2Vec features do not perform well for the bus, rail and ferry networks. The tram and subway networks perform better or are similar to the handcrafted features.
+
+\textbf{Label Prediction}
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/label-pred-all_combined.eps}}
+\caption{F1 score of label prediction using Hand Crafted features}
+\label{label-pred-hc_fig}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/label-pred-hco.eps}}
+% \caption{F1 score of label prediction using node properties}
+% \label{label-pred-node_fig}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/label-pred-commono.eps}}
+% \caption{F1 score of label prediction using common properties}
+% \label{label-pred-common_fig}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+% \begin{figure}[ht]
+% \vskip -0.1in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{images/label-pred-all.eps}}
+% \caption{F1 score of label prediction using both properties}
+% \label{label-pred-all_fig}
+% \end{center}
+% \vskip -0.3in
+% \end{figure}
+
+\textsc{Hand-crafted Features}
+
+The label prediction task involves predicting the type of edge (represents the mode of transport) given that it already exists between two nodes. Thus, each city was trained on a model of its own, considering all the modes of transport it has. The number of samples was equal to the number of existing edges. However, the targets were an array with dimensions equal to the number of modes of transport in the city. Cities with only one mode of transport were excluded from the analysis. In the experiment with hand-crafted features, everything was similar to edge prediction except that the Katz centrality was removed from the node properties due to the complex MultiDiGraph structure.
+
+Using only the node properties, the F1 scores (\cref{label-pred-hc_fig}) on the task were from 0.3 to 0.91. Since the bus network label is the most common, it was predicted often. Canberra achieves the highest score of 0.91. The city has two modes of transport (bus and rail). The bus network consists of 2727 nodes and 3209 edges, and the rail network has only 3 nodes and 4 edges. Such heavy imbalance gives rise to the high average F1 score. In contrast, Melbourne with three modes of transport - bus(13131 nodes, 18943 edges), tram (219 nodes, 563 edges), and rail (219 nodes and 563 edges) has the least score of 0.3. The model failed to capture the complexity of the problem with selected features.
+
+On average many cities achieve better performance with common features than using the node properties (\cref{label-pred-hc_fig}). The F1 scores lie between 0.06 and 0.94. Adelaide, Lisbon, Sydney and Toulouse have an f1 score greater than 0.9. Looking at the confusion matrix reveals the same problem as earlier i.e., the weighted average of the score is high, but the individual label performances are not good. Canberra has the lowest f1 score of 0.06 and the confusion matrix shows that 97\% of the time, the rail label is predicted. A similar trend was seen in Berlin, Bordeaux and Brisbane which have F1 scores less than 0.4. Those cities with high scores predicted bus labels majorly, and those with least scores did not.
+
+Lastly, when using both node and common features, the F1 score of all cities (\cref{label-pred-hc_fig}) except Berlin (the performance further drops) shows a significant improvement. The f1 score of Berlin is 0.32, which is the least followed by 0.52 for Bordeaux, 0.66 for Venice and more than 0.7 for the remaining. As expected, the ability (inability) to predict (not predict) the bus label influenced the average score. Nevertheless, using both features creates a hybrid model with better than random performance.
+
+\textsc{Node2Vec Features}
+
+\begin{figure}[ht]
+\vskip -0.1in
+\begin{center}
+\centerline{\includegraphics[width=\columnwidth]{images/label-pred-node2vec.eps}}
+\caption{F1 score of label prediction using 1 to 5 Node2Vec features}
+\label{label-pred-n2v_fig}
+\end{center}
+\vskip -0.3in
+\end{figure}
+
+For most of the cities, Node2Vec features do not even perform as well as using the common features (\cref{label-pred-n2v_fig}). However, for Berlin and Bordeaux Node2Vec improves compared to using node features, which was the best for them. For the city of Nantes, Node2Vec performs better than its best performer which uses the combined node and common features. 
+
+Overall, the influence of the number of features on the performance of the model is not significant. Among the cities where Node2Vec performs better, Bordeaux and Nantes achieved the best performance with one feature, and Berlin with three.
+
+\subsubsection{Graph Neural Networks}
+The hand-crafted and Node2Vec features did not have consistency across all cities, and experiments were conducted using Graph Neural Networks (GNN) to see if the GNNs perform consistently. Despite the initial optimism, the experimental results revealed that this approach did not yield satisfactory performance for link and label prediction in transport networks. The probable reason could be that the complexity and inherent noise within transport networks may have posed challenges for the GNN to effectively capture and model the underlying dynamics. Additionally, the limited amount of labelled training data for transport networks might have impeded the network's ability to generalize and make accurate predictions. Especially the imbalance in the examples for different modes of transport.
+
+It is worth noting that traditional approaches, such as hand-crafted and node2vec features, have demonstrated decent performance in similar prediction tasks. These methods rely on carefully engineered domain-specific features and embedding techniques that capture relevant characteristics of the transport network.
+
 \section{Conclusion}
 \label{conclusion}
 
-% \section{Electronic Submission}
-% \label{submission}
+This project analysed the transport system of 25 cities through network analysis. The initial investigation highlighted the pitfalls of lacking standardised nomenclature and aggregation rules of the stops. Other aspects revealed in the exploration are the unusually low density and clustering coefficient of the networks and their existence of hubs - properties that indicate that these are scale-free networks and not random. The Betweenness centrality spotlighted the network's critical stations that act as transit stops. Keeping track of these stations and their infrastructure will be crucial in maintaining the smooth operation of public transport in the city. The average degree of 2 confirms a general understanding of connectivity in the transport system - with the previous and next stop. The number of nodes with varied types of edges shows the connectedness of the network, and very few cities were well connected, but most were not. This information formed the basis for the tasks of edge prediction between the nodes and edge type(s) prediction.
 
-% Submission to ICML 2023 will be entirely electronic, via a web site
-% (not email). Information about the submission process and \LaTeX\ templates
-% are available on the conference web site at:
-% \begin{center}
-% \textbf{\texttt{http://icml.cc/}}
-% \end{center}
+The second part of the project involved edge and edge-label prediction using hand-crafted and Node2Vec features. Directed edges were predicted between two nodes, and separate experiments were conducted for each city and mode of transport. The hand-crafted features of in-degree centrality, out-degree centrality, betweenness centrality and Katz centrality were well suited, and the Node2Vec features were only comparable to tram and subway networks. The label prediction involved predicting all modes of transport that exist between the edges of the entire city. Label prediction also used the same hand-crafted features except for Katz centrality. In this second task, the hand-crafted features were well-suited for most of the cities. In both tasks, the number of Node2Vec features did not have any significant effect on the performance. The exploration of GNNs for link and label prediction in transport networks did not yield satisfactory results. Future research can focus on refining GNN architectures, incorporating additional contextual information, and exploring hybrid approaches to enhance their predictive capabilities. However, the success of traditional techniques could be attributed to their ability to incorporate domain-specific information effectively.
 
-% The guidelines below will be enforced for initial submissions and
-% camera-ready copies. Here is a brief summary:
-% \begin{itemize}
-% \item Submissions must be in PDF\@. 
-% \item \textbf{New to this year}: If your paper has appendices, submit the appendix together with the main body and the references \textbf{as a single file}. Reviewers will not look for appendices as a separate PDF file. So if you submit such an extra file, reviewers will very likely miss it.
-% \item Page limit: The main body of the paper has to be fitted to 8 pages, excluding references and appendices; the space for the latter two is not limited. For the final version of the paper, authors can add one extra page to the main body.
-% \item \textbf{Do not include author information or acknowledgements} in your
-%     initial submission.
-% \item Your paper should be in \textbf{10 point Times font}.
-% \item Make sure your PDF file only uses Type-1 fonts.
-% \item Place figure captions \emph{under} the figure (and omit titles from inside
-%     the graphic file itself). Place table captions \emph{over} the table.
-% \item References must include page numbers whenever possible and be as complete
-%     as possible. Place multiple citations in chronological order.
-% \item Do not alter the style template; in particular, do not compress the paper
-%     format by reducing the vertical spaces.
-% \item Keep your abstract brief and self-contained, one paragraph and roughly
-%     4--6 sentences. Gross violations will require correction at the
-%     camera-ready phase. The title should have content words capitalized.
-% \end{itemize}
+Although not severe, this study also has limitations. Firstly humans would mentally represent a stop as a single location irrespective of the number of platforms or on which side of the road is the boarding point. However, this was not always the case. In future experiments, merging geographically closely located nodes can become a part of the pre-processing step. The geographical dimensions of the city and other factors, like its population, area, and usage of public transport, were not part of the analysis. Reading the existing results with these factors collected at the same time as the data collection period will deepen the relevancy of the results. The limits on the computation power did not allow us to conduct large experiments. One such experiment can be measuring the performance of edge and label prediction models on a different city than those they were originally trained on. Although a cross-validation study was ongoing, its results are not reported here, a cross-validation will further strengthen the findings.
 
-% \subsection{Submitting Papers}
-
-% \textbf{Paper Deadline:} The deadline for paper submission that is
-% advertised on the conference website is strict. If your full,
-% anonymized, submission does not reach us on time, it will not be
-% considered for publication. 
-
-% \textbf{Anonymous Submission:} ICML uses double-blind review: no identifying
-% author information may appear on the title page or in the paper
-% itself. \cref{author info} gives further details.
-
-% \textbf{Simultaneous Submission:} ICML will not accept any paper which,
-% at the time of submission, is under review for another conference or
-% has already been published. This policy also applies to papers that
-% overlap substantially in technical content with conference papers
-% under review or previously published. ICML submissions must not be
-% submitted to other conferences and journals during ICML's review
-% period.
-% %Authors may submit to ICML substantially different versions of journal papers
-% %that are currently under review by the journal, but not yet accepted
-% %at the time of submission.
-% Informal publications, such as technical
-% reports or papers in workshop proceedings which do not appear in
-% print, do not fall under these restrictions.
-
-% \medskip
-
-% Authors must provide their manuscripts in \textbf{PDF} format.
-% Furthermore, please make sure that files contain only embedded Type-1 fonts
-% (e.g.,~using the program \texttt{pdffonts} in linux or using
-% File/DocumentProperties/Fonts in Acrobat). Other fonts (like Type-3)
-% might come from graphics files imported into the document.
-
-% Authors using \textbf{Word} must convert their document to PDF\@. Most
-% of the latest versions of Word have the facility to do this
-% automatically. Submissions will not be accepted in Word format or any
-% format other than PDF\@. Really. We're not joking. Don't send Word.
-
-% Those who use \textbf{\LaTeX} should avoid including Type-3 fonts.
-% Those using \texttt{latex} and \texttt{dvips} may need the following
-% two commands:
-
-% {\footnotesize
-% \begin{verbatim}
-% dvips -Ppdf -tletter -G0 -o paper.ps paper.dvi
-% ps2pdf paper.ps
-% \end{verbatim}}
-% It is a zero following the ``-G'', which tells dvips to use
-% the config.pdf file. Newer \TeX\ distributions don't always need this
-% option.
-
-% Using \texttt{pdflatex} rather than \texttt{latex}, often gives better
-% results. This program avoids the Type-3 font problem, and supports more
-% advanced features in the \texttt{microtype} package.
-
-% \textbf{Graphics files} should be a reasonable size, and included from
-% an appropriate format. Use vector formats (.eps/.pdf) for plots,
-% lossless bitmap formats (.png) for raster graphics with sharp lines, and
-% jpeg for photo-like images.
-
-% The style file uses the \texttt{hyperref} package to make clickable
-% links in documents. If this causes problems for you, add
-% \texttt{nohyperref} as one of the options to the \texttt{icml2023}
-% usepackage statement.
-
-
-% \subsection{Submitting Final Camera-Ready Copy}
-
-% The final versions of papers accepted for publication should follow the
-% same format and naming convention as initial submissions, except that
-% author information (names and affiliations) should be given. See
-% \cref{final author} for formatting instructions.
-
-% The footnote, ``Preliminary work. Under review by the International
-% Conference on Machine Learning (ICML). Do not distribute.'' must be
-% modified to ``\textit{Proceedings of the
-% $\mathit{40}^{th}$ International Conference on Machine Learning},
-% Honolulu, Hawaii, USA, PMLR 202, 2023.
-% Copyright 2023 by the author(s).''
-
-% For those using the \textbf{\LaTeX} style file, this change (and others) is
-% handled automatically by simply changing
-% $\mathtt{\backslash usepackage\{icml2023\}}$ to
-% $$\mathtt{\backslash usepackage[accepted]\{icml2023\}}$$
-% Authors using \textbf{Word} must edit the
-% footnote on the first page of the document themselves.
-
-% Camera-ready copies should have the title of the paper as running head
-% on each page except the first one. The running title consists of a
-% single line centered above a horizontal rule which is $1$~point thick.
-% The running head should be centered, bold and in $9$~point type. The
-% rule should be $10$~points above the main text. For those using the
-% \textbf{\LaTeX} style file, the original title is automatically set as running
-% head using the \texttt{fancyhdr} package which is included in the ICML
-% 2023 style file package. In case that the original title exceeds the
-% size restrictions, a shorter form can be supplied by using
-
-% \verb|\icmltitlerunning{...}|
-
-% just before $\mathtt{\backslash begin\{document\}}$.
-% Authors using \textbf{Word} must edit the header of the document themselves.
-
-% \section{Format of the Paper}
-
-% All submissions must follow the specified format.
-
-% \subsection{Dimensions}
-
-
-
-
-% The text of the paper should be formatted in two columns, with an
-% overall width of 6.75~inches, height of 9.0~inches, and 0.25~inches
-% between the columns. The left margin should be 0.75~inches and the top
-% margin 1.0~inch (2.54~cm). The right and bottom margins will depend on
-% whether you print on US letter or A4 paper, but all final versions
-% must be produced for US letter size.
-% Do not write anything on the margins.
-
-% The paper body should be set in 10~point type with a vertical spacing
-% of 11~points. Please use Times typeface throughout the text.
-
-% \subsection{Title}
-
-% The paper title should be set in 14~point bold type and centered
-% between two horizontal rules that are 1~point thick, with 1.0~inch
-% between the top rule and the top edge of the page. Capitalize the
-% first letter of content words and put the rest of the title in lower
-% case.
-
-% \subsection{Author Information for Submission}
-% \label{author info}
-
-% ICML uses double-blind review, so author information must not appear. If
-% you are using \LaTeX\/ and the \texttt{icml2023.sty} file, use
-% \verb+\icmlauthor{...}+ to specify authors and \verb+\icmlaffiliation{...}+ to specify affiliations. (Read the TeX code used to produce this document for an example usage.) The author information
-% will not be printed unless \texttt{accepted} is passed as an argument to the
-% style file.
-% Submissions that include the author information will not
-% be reviewed.
-
-% \subsubsection{Self-Citations}
-
-% If you are citing published papers for which you are an author, refer
-% to yourself in the third person. In particular, do not use phrases
-% that reveal your identity (e.g., ``in previous work \cite{langley00}, we
-% have shown \ldots'').
-
-% Do not anonymize citations in the reference section. The only exception are manuscripts that are
-% not yet published (e.g., under submission). If you choose to refer to
-% such unpublished manuscripts \cite{anonymous}, anonymized copies have
-% to be submitted
-% as Supplementary Material via CMT\@. However, keep in mind that an ICML
-% paper should be self contained and should contain sufficient detail
-% for the reviewers to evaluate the work. In particular, reviewers are
-% not required to look at the Supplementary Material when writing their
-% review (they are not required to look at more than the first $8$ pages of the submitted document).
-
-% \subsubsection{Camera-Ready Author Information}
-% \label{final author}
-
-% If a paper is accepted, a final camera-ready copy must be prepared.
-% %
-% For camera-ready papers, author information should start 0.3~inches below the
-% bottom rule surrounding the title. The authors' names should appear in 10~point
-% bold type, in a row, separated by white space, and centered. Author names should
-% not be broken across lines. Unbolded superscripted numbers, starting 1, should
-% be used to refer to affiliations.
-
-% Affiliations should be numbered in the order of appearance. A single footnote
-% block of text should be used to list all the affiliations. (Academic
-% affiliations should list Department, University, City, State/Region, Country.
-% Similarly for industrial affiliations.)
-
-% Each distinct affiliations should be listed once. If an author has multiple
-% affiliations, multiple superscripts should be placed after the name, separated
-% by thin spaces. If the authors would like to highlight equal contribution by
-% multiple first authors, those authors should have an asterisk placed after their
-% name in superscript, and the term ``\textsuperscript{*}Equal contribution"
-% should be placed in the footnote block ahead of the list of affiliations. A
-% list of corresponding authors and their emails (in the format Full Name
-% \textless{}email@domain.com\textgreater{}) can follow the list of affiliations.
-% Ideally only one or two names should be listed.
-
-% A sample file with author names is included in the ICML2023 style file
-% package. Turn on the \texttt{[accepted]} option to the stylefile to
-% see the names rendered. All of the guidelines above are implemented
-% by the \LaTeX\ style file.
-
-% \subsection{Abstract}
-
-% The paper abstract should begin in the left column, 0.4~inches below the final
-% address. The heading `Abstract' should be centered, bold, and in 11~point type.
-% The abstract body should use 10~point type, with a vertical spacing of
-% 11~points, and should be indented 0.25~inches more than normal on left-hand and
-% right-hand margins. Insert 0.4~inches of blank space after the body. Keep your
-% abstract brief and self-contained, limiting it to one paragraph and roughly 4--6
-% sentences. Gross violations will require correction at the camera-ready phase.
-
-% \subsection{Partitioning the Text}
-
-% You should organize your paper into sections and paragraphs to help
-% readers place a structure on the material and understand its
-% contributions.
-
-% \subsubsection{Sections and Subsections}
-
-% Section headings should be numbered, flush left, and set in 11~pt bold
-% type with the content words capitalized. Leave 0.25~inches of space
-% before the heading and 0.15~inches after the heading.
-
-% Similarly, subsection headings should be numbered, flush left, and set
-% in 10~pt bold type with the content words capitalized. Leave
-% 0.2~inches of space before the heading and 0.13~inches afterward.
-
-% Finally, subsubsection headings should be numbered, flush left, and
-% set in 10~pt small caps with the content words capitalized. Leave
-% 0.18~inches of space before the heading and 0.1~inches after the
-% heading.
-
-% Please use no more than three levels of headings.
-
-% \subsubsection{Paragraphs and Footnotes}
-
-% Within each section or subsection, you should further partition the
-% paper into paragraphs. Do not indent the first line of a given
-% paragraph, but insert a blank line between succeeding ones.
-
-% You can use footnotes\footnote{Footnotes
-% should be complete sentences.} to provide readers with additional
-% information about a topic without interrupting the flow of the paper.
-% Indicate footnotes with a number in the text where the point is most
-% relevant. Place the footnote in 9~point type at the bottom of the
-% column in which it appears. Precede the first footnote in a column
-% with a horizontal rule of 0.8~inches.\footnote{Multiple footnotes can
-% appear in each column, in the same order as they appear in the text,
-% but spread them across columns and pages if possible.}
-
-% \begin{figure}[ht]
-% \vskip 0.2in
-% \begin{center}
-% \centerline{\includegraphics[width=\columnwidth]{icml_numpapers}}
-% \caption{Historical locations and number of accepted papers for International
-% Machine Learning Conferences (ICML 1993 -- ICML 2008) and International
-% Workshops on Machine Learning (ML 1988 -- ML 1992). At the time this figure was
-% produced, the number of accepted papers for ICML 2008 was unknown and instead
-% estimated.}
-% \label{icml-historical}
-% \end{center}
-% \vskip -0.2in
-% \end{figure}
-
-% \subsection{Figures}
-
-% You may want to include figures in the paper to illustrate
-% your approach and results. Such artwork should be centered,
-% legible, and separated from the text. Lines should be dark and at
-% least 0.5~points thick for purposes of reproduction, and text should
-% not appear on a gray background.
-
-% Label all distinct components of each figure. If the figure takes the
-% form of a graph, then give a name for each axis and include a legend
-% that briefly describes each curve. Do not include a title inside the
-% figure; instead, the caption should serve this function.
-
-% Number figures sequentially, placing the figure number and caption
-% \emph{after} the graphics, with at least 0.1~inches of space before
-% the caption and 0.1~inches after it, as in
-% \cref{icml-historical}. The figure caption should be set in
-% 9~point type and centered unless it runs two or more lines, in which
-% case it should be flush left. You may float figures to the top or
-% bottom of a column, and you may set wide figures across both columns
-% (use the environment \texttt{figure*} in \LaTeX). Always place
-% two-column figures at the top or bottom of the page.
-
-% \subsection{Algorithms}
-
-% If you are using \LaTeX, please use the ``algorithm'' and ``algorithmic''
-% environments to format pseudocode. These require
-% the corresponding stylefiles, algorithm.sty and
-% algorithmic.sty, which are supplied with this package.
-% \cref{alg:example} shows an example.
-
-% \begin{algorithm}[tb]
-%    \caption{Bubble Sort}
-%    \label{alg:example}
-% \begin{algorithmic}
-%    \STATE {\bfseries Input:} data $x_i$, size $m$
-%    \REPEAT
-%    \STATE Initialize $noChange = true$.
-%    \FOR{$i=1$ {\bfseries to} $m-1$}
-%    \IF{$x_i > x_{i+1}$}
-%    \STATE Swap $x_i$ and $x_{i+1}$
-%    \STATE $noChange = false$
-%    \ENDIF
-%    \ENDFOR
-%    \UNTIL{$noChange$ is $true$}
-% \end{algorithmic}
-% \end{algorithm}
-
-% \subsection{Tables}
-
-% You may also want to include tables that summarize material. Like
-% figures, these should be centered, legible, and numbered consecutively.
-% However, place the title \emph{above} the table with at least
-% 0.1~inches of space before the title and the same after it, as in
-% \cref{sample-table}. The table title should be set in 9~point
-% type and centered unless it runs two or more lines, in which case it
-% should be flush left.
-
-% % Note use of \abovespace and \belowspace to get reasonable spacing
-% % above and below tabular lines.
-
-% \begin{table}[t]
-% \caption{Classification accuracies for naive Bayes and flexible
-% Bayes on various data sets.}
-% \label{sample-table}
-% \vskip 0.15in
-% \begin{center}
-% \begin{small}
-% \begin{sc}
-% \begin{tabular}{lcccr}
-% \toprule
-% Data set & Naive & Flexible & Better? \\
-% \midrule
-% Breast    & 95.9$\pm$ 0.2& 96.7$\pm$ 0.2& $\surd$ \\
-% Cleveland & 83.3$\pm$ 0.6& 80.0$\pm$ 0.6& $\times$\\
-% Glass2    & 61.9$\pm$ 1.4& 83.8$\pm$ 0.7& $\surd$ \\
-% Credit    & 74.8$\pm$ 0.5& 78.3$\pm$ 0.6&         \\
-% Horse     & 73.3$\pm$ 0.9& 69.7$\pm$ 1.0& $\times$\\
-% Meta      & 67.1$\pm$ 0.6& 76.5$\pm$ 0.5& $\surd$ \\
-% Pima      & 75.1$\pm$ 0.6& 73.9$\pm$ 0.5&         \\
-% Vehicle   & 44.9$\pm$ 0.6& 61.5$\pm$ 0.4& $\surd$ \\
-% \bottomrule
-% \end{tabular}
-% \end{sc}
-% \end{small}
-% \end{center}
-% \vskip -0.1in
-% \end{table}
-
-% Tables contain textual material, whereas figures contain graphical material.
-% Specify the contents of each row and column in the table's topmost
-% row. Again, you may float tables to a column's top or bottom, and set
-% wide tables across both columns. Place two-column tables at the
-% top or bottom of the page.
-
-% \subsection{Theorems and such}
-% The preferred way is to number definitions, propositions, lemmas, etc. consecutively, within sections, as shown below.
-% \begin{definition}
-% \label{def:inj}
-% A function $f:X \to Y$ is injective if for any $x,y\in X$ different, $f(x)\ne f(y)$.
-% \end{definition}
-% Using \cref{def:inj} we immediate get the following result:
-% \begin{proposition}
-% If $f$ is injective mapping a set $X$ to another set $Y$, 
-% the cardinality of $Y$ is at least as large as that of $X$
-% \end{proposition}
-% \begin{proof} 
-% Left as an exercise to the reader. 
-% \end{proof}
-% \cref{lem:usefullemma} stated next will prove to be useful.
-% \begin{lemma}
-% \label{lem:usefullemma}
-% For any $f:X \to Y$ and $g:Y\to Z$ injective functions, $f \circ g$ is injective.
-% \end{lemma}
-% \begin{theorem}
-% \label{thm:bigtheorem}
-% If $f:X\to Y$ is bijective, the cardinality of $X$ and $Y$ are the same.
-% \end{theorem}
-% An easy corollary of \cref{thm:bigtheorem} is the following:
-% \begin{corollary}
-% If $f:X\to Y$ is bijective, 
-% the cardinality of $X$ is at least as large as that of $Y$.
-% \end{corollary}
-% \begin{assumption}
-% The set $X$ is finite.
-% \label{ass:xfinite}
-% \end{assumption}
-% \begin{remark}
-% According to some, it is only the finite case (cf. \cref{ass:xfinite}) that is interesting.
-% \end{remark}
-% %restatable
-
-% \subsection{Citations and References}
-
-% Please use APA reference format regardless of your formatter
-% or word processor. If you rely on the \LaTeX\/ bibliographic
-% facility, use \texttt{natbib.sty} and \texttt{icml2023.bst}
-% included in the style-file package to obtain this format.
-
-% Citations within the text should include the authors' last names and
-% year. If the authors' names are included in the sentence, place only
-% the year in parentheses, for example when referencing Arthur Samuel's
-% pioneering work \yrcite{Samuel59}. Otherwise place the entire
-% reference in parentheses with the authors and year separated by a
-% comma \cite{Samuel59}. List multiple references separated by
-% semicolons \cite{kearns89,Samuel59,mitchell80}. Use the `et~al.'
-% construct only for citations with three or more authors or after
-% listing all authors to a publication in an earlier reference \cite{MachineLearningI}.
-
-% Authors should cite their own work in the third person
-% in the initial version of their paper submitted for blind review.
-% Please refer to \cref{author info} for detailed instructions on how to
-% cite your own papers.
-
-% Use an unnumbered first-level section heading for the references, and use a
-% hanging indent style, with the first line of the reference flush against the
-% left margin and subsequent lines indented by 10 points. The references at the
-% end of this document give examples for journal articles \cite{Samuel59},
-% conference publications \cite{langley00}, book chapters \cite{Newell81}, books
-% \cite{DudaHart2nd}, edited volumes \cite{MachineLearningI}, technical reports
-% \cite{mitchell80}, and dissertations \cite{kearns89}.
-
-% Alphabetize references by the surnames of the first authors, with
-% single author entries preceding multiple author entries. Order
-% references for the same authors by year of publication, with the
-% earliest first. Make sure that each reference includes all relevant
-% information (e.g., page numbers).
-
-% Please put some effort into making references complete, presentable, and
-% consistent, e.g. use the actual current name of authors.
-% If using bibtex, please protect capital letters of names and
-% abbreviations in titles, for example, use \{B\}ayesian or \{L\}ipschitz
-% in your .bib file.
-
-% \section*{Accessibility}
-% Authors are kindly asked to make their submissions as accessible as possible for everyone including people with disabilities and sensory or neurological differences.
-% Tips of how to achieve this and what to pay attention to will be provided on the conference website \url{http://icml.cc/}.
-
-% \section*{Software and Data}
-
-% If a paper is accepted, we strongly encourage the publication of software and data with the
-% camera-ready version of the paper whenever appropriate. This can be
-% done by including a URL in the camera-ready copy. However, \textbf{do not}
-% include URLs that reveal your institution or identity in your
-% submission for review. Instead, provide an anonymous URL or upload
-% the material as ``Supplementary Material'' into the CMT reviewing
-% system. Note that reviewers are not required to look at this material
-% when writing their review.
-
-% % Acknowledgements should only appear in the accepted version.
-% \section*{Acknowledgements}
-
-% \textbf{Do not} include acknowledgements in the initial version of
-% the paper submitted for blind review.
-
-% If a paper is accepted, the final camera-ready version can (and
-% probably should) include acknowledgements. In this case, please
-% place such acknowledgements in an unnumbered section at the
-% end of the paper. Typically, this will include thanks to reviewers
-% who gave useful comments, to colleagues who contributed to the ideas,
-% and to funding agencies and corporate sponsors that provided financial
-% support.
-
-
-% In the unusual situation where you want a paper to appear in the
-% references without citing it in the main text, use \nocite
-% \nocite{langley00}
 
 \bibliography{example_paper}
 \bibliographystyle{icml2023}
